@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>bundleid</key>
+	<string>moe.tinko.workflow.alfred.ipip</string>
+	<key>category</key>
+	<string>Tools</string>
+	<key>connections</key>
+	<dict>
+		<key>6E09078E-98E5-4169-88AF-FCBB137FA008</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>536400EB-EB28-4DD1-BD77-D5BAA32A3D72</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
+	</dict>
+	<key>createdby</key>
+	<string>Tinko</string>
+	<key>description</key>
+	<string>IP address, asn, geolocation and hostname</string>
+	<key>disabled</key>
+	<false/>
+	<key>name</key>
+	<string>ipip</string>
+	<key>objects</key>
+	<array>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttrimmode</key>
+				<integer>1</integer>
+				<key>argumenttype</key>
+				<integer>1</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>ip</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyinitially</key>
+				<false/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>2</integer>
+				<key>runningsubtext</key>
+				<string>Please wait......</string>
+				<key>script</key>
+				<string>require_once 'workflows.php';
+$w = new Workflows();
+$query = "{query}";
+$config = [
+    "local" =&gt; "https://clientapi.ipip.net/ip.php?a=location",
+    "query" =&gt; "https://clientapi.ipip.net/browser/chrome?",
+    "language" =&gt; "zh-CN",
+];
+if ($query == '') {
+    $json = $w-&gt;request($config["local"]);
+    $details = json_decode($json, true);
+    $w-&gt;result(
+        $details['ip'],
+        $details['ip'],
+        $details['ip'],
+        "Local IP Address",
+        "",
+        "no",
+        $details['ip']
+    );
+    $w-&gt;result(
+        $details["loc"],
+        $details["loc"],
+        $details["loc"],
+        "Location",
+        "",
+        "no",
+        $details['ip']
+    );
+    echo $w-&gt;toxml();
+    return;
+}
+if (filter_var($query, FILTER_VALIDATE_IP)) {
+  $json = $w-&gt;request($config["query"] . "ip=" . $query . "&amp;l=" . $config["language"]);
+  $details = json_decode($json, true)["data"];
+  $w-&gt;result(
+      "https://www.ipip.net/ip/{$details['ip']}.html",
+      "https://www.ipip.net/ip/{$details['ip']}.html",
+      $details['ip'],
+      "IP Address",
+      "",
+      "yes"
+  );
+  $w-&gt;result(
+      $details["country"] . "," . $details["province"] . "," . $details["city"],
+      $details["country"] . "," . $details["province"] . "," . $details["city"],
+      $details["country"] . "," . $details["province"] . "," . $details["city"],
+      "Location",
+      "",
+      "no"
+  );
+  $w-&gt;result(
+      $details["isp"],
+      $details["isp"],
+      $details["isp"],
+      "ISP",
+      "",
+      "no"
+  );
+  foreach ($details["asn"] as $key =&gt; $value) {
+    $w-&gt;result(
+        $value,
+        $value,
+        $value,
+        "ASN",
+        "",
+        "no"
+    );
+  }
+  if (sizeof($details["ports"])) {
+    $w-&gt;result(
+      implode(',',$details["ports"]),
+      implode(',',$details["ports"]),
+      implode(',',$details["ports"]),
+      "Ports",
+      "",
+      "no"
+    );
+  }
+  echo $w-&gt;toxml();
+  return;
+}
+if (filter_var($query, FILTER_VALIDATE_DOMAIN)) {
+    foreach (dns_get_record($query, DNS_A) as $key =&gt; $value) {
+        $w-&gt;result(
+            $value["ip"],
+            $value["ip"],
+            $value["ip"],
+            "A Record",
+            "",
+            "no",
+            $value["ip"]
+        );
+    }
+    foreach (dns_get_record($query, DNS_AAAA) as $key =&gt; $value) {
+        $w-&gt;result(
+          $value["ipv6"],
+            $value["ipv6"],
+            $value["ipv6"],
+            "AAAA Record",
+            "",
+            "no",
+            $value["ipv6"]
+        );
+    }
+    echo $w-&gt;toxml();
+    return;
+}</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>IPIP</string>
+				<key>title</key>
+				<string>ip</string>
+				<key>type</key>
+				<integer>1</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>6E09078E-98E5-4169-88AF-FCBB137FA008</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>browser</key>
+				<string></string>
+				<key>spaces</key>
+				<string></string>
+				<key>url</key>
+				<string>{query}</string>
+				<key>utf8</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.openurl</string>
+			<key>uid</key>
+			<string>536400EB-EB28-4DD1-BD77-D5BAA32A3D72</string>
+			<key>version</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>readme</key>
+	<string></string>
+	<key>uidata</key>
+	<dict>
+		<key>536400EB-EB28-4DD1-BD77-D5BAA32A3D72</key>
+		<dict>
+			<key>xpos</key>
+			<integer>460</integer>
+			<key>ypos</key>
+			<integer>130</integer>
+		</dict>
+		<key>6E09078E-98E5-4169-88AF-FCBB137FA008</key>
+		<dict>
+			<key>xpos</key>
+			<integer>260</integer>
+			<key>ypos</key>
+			<integer>130</integer>
+		</dict>
+	</dict>
+	<key>version</key>
+	<string></string>
+	<key>webaddress</key>
+	<string>https://github.com/TinkoLiu</string>
+</dict>
+</plist>
